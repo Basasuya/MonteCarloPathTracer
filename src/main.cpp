@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Model.h"
+#include <GLUT/glut.h>
 using namespace std;
 
 int chooseRender = 4;
@@ -14,23 +15,42 @@ int ArgPos(char *str, int argc, char **argv) {
     }
     return -1;
 }
-
+Model *model;
 void setParams(int argc, char ** argv) {
     int i;
     if ((i = ArgPos((char *) "-read", argc, argv)) > 0) chooseRender = atoi(argv[i + 1]);
 }
 
 void Render1() {
+    model = new Model("./models/Scene01");
 }
 
 void Render2() {
+    model = new Model("./models/Scene02");
 }
 
 void Render3() {
+    model = new Model("./models/Scene03");
 }
 
 void Render4() {
-    Model model("./models/Scene04");
+    model = new Model("./models/Scene04");
+}
+
+void render(){
+    glClear(GL_COLOR_BUFFER_BIT);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, model->scene.width,  0, model->scene.height);
+
+    float* colors = model->render();
+
+    glRasterPos2i(0, 0);
+    glDrawPixels(model->scene.width, model->scene.height, GL_RGB, GL_FLOAT, (GLvoid *)colors);
+
+    glFlush();
 }
 
 
@@ -54,5 +74,15 @@ int main(int argc,char** argv) {
             Render4();
             break;
     }
+
+    glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
+	glutInitWindowPosition(0, 0);
+	glutInitWindowSize(model->scene.width, model->scene.height);
+	glutCreateWindow("motecarlo");
+
+	glutDisplayFunc(render);
+	glutIdleFunc(glutPostRedisplay);
+    glutMainLoop();
     return 0;
 }

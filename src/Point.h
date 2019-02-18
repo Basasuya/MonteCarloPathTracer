@@ -2,7 +2,16 @@
 #define __POINT_H
 
 #include <cmath>
-#include "Util.h"
+
+const float EPS = 1e-5;
+
+
+bool isEqual(float a, float b) {
+	if (fabs(a - b) < EPS) {
+		return true;
+	}
+	return false;
+}
 
 class vec3f {
 public:
@@ -17,9 +26,11 @@ public:
 
     inline vec3f operator - () { return vec3f(-x, -y, -z); }
     vec3f flip(){ return vec3f(-x, -y, -z); };
-
-	inline bool operator == (const vec3f &u) { return isEqualf(x, u.x) && isEqualf(y, u.y) && isEqualf(z, u.z); }
-	inline bool operator != (const vec3f &u) { return !(isEqualf(x, u.x) && isEqualf(y, u.y) && isEqualf(z, u.z)); }
+	void print() {
+		for(int i = 0; i < 3; ++i) printf("%.3f ", n[i]); printf("\n");
+	}
+	inline bool operator == (const vec3f &u) { return isEqual(x, u.x) && isEqual(y, u.y) && isEqual(z, u.z); }
+	inline bool operator != (const vec3f &u) { return !(isEqual(x, u.x) && isEqual(y, u.y) && isEqual(z, u.z)); }
 
 	inline vec3f& operator = (const vec3f &v) { x = v.x; y = v.y; z = v.z; return *this; }
 	inline vec3f& operator += (float num) { x += num; y += num; z += num; return *this; }
@@ -70,6 +81,6 @@ inline vec3f normalize(const vec3f &u) {
 }
 
 
-
+const vec3f BLACK = vec3f(0.0f, 0.0f, 0.0f);
 
 #endif
