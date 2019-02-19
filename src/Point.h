@@ -295,7 +295,7 @@ public:
     
     friend inline vec3f operator * (Mat4 &mat4, vec3f &Vector)
     {
-        Vec3f v;
+        vec3f v;
         v.x = mat4.mat[0] * Vector.x + mat4.mat[4] * Vector.y + mat4.mat[8] * Vector.z;
         v.y = mat4.mat[1] * Vector.x + mat4.mat[5] * Vector.y + mat4.mat[9] * Vector.z;
         v.z = mat4.mat[2] * Vector.x + mat4.mat[6] * Vector.y + mat4.mat[10] * Vector.z;

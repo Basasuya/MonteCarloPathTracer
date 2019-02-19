@@ -3,9 +3,10 @@
 
 #include <iostream>
 #include <cmath>
+#include <cfloat>
+#include "Util.h"
 #include "Point.h"
 using namespace std;
-
 
 class Ray {
 public:
@@ -15,6 +16,11 @@ public:
     SOURCE source;
     float tmin,tmax;
     float IOR;
+    bool hit;
+    vec3f hitPoint;
+    vec3f hitNormal;
+    Triangle hitTriangle;
+    
 
 public:
     Ray(vec3f _pos = vec3f(0.0, 0.0, 0.0), vec3f _direction = vec3f(0.0, 0.0, 0.0), SOURCE _source = SOURCE::NONE, float _ior = 1.0) {
@@ -23,14 +29,15 @@ public:
         source = _source;
         IOR = _ior;
         tmin = EPS;
-        tmax = 1e9;
+        tmax = FLT_MAX;
+        hit = false;
     }
     vec3f getPoint(float t) { 
         return pos + direction*t;
     }
 
     bool isWithinBounds(float tVal) { 
-        return tVal <= tmax && tVal >= tmin; 
+        return tVal < tmax && tVal > tmin; 
     }
 
     vec3f reflect(vec3f& normal) { 
