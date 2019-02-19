@@ -7,6 +7,7 @@
 #include <iostream>
 #include <cstring>
 #include "Point.h"
+#include "Ray.h"
 using namespace std;
 
 
@@ -50,6 +51,20 @@ struct AABB {
 			high[i] = _high[i];
 		}
 	}
+	bool intersect(Ray& ray) {
+		float tmin = -1, tmax = -1;
+		for(int i = 0; i < 3; ++i) {
+			float t1 = (low[i] - ray.pos[i]) / ray.direction[i];
+			float t2 = (high[i] - ray.pos[i]) / ray.direction[i];
+			if(i == 0) {
+				tmin = min(t1, t2); tmax = max(t1, t2);
+			} else {
+				tmin = max(tmin, min(t1, t2));
+				tmax = min(tmax, max(t1, t2));
+			}
+		}
+		return (tmin < ray.tmax && tmax > ray.tmax && tmin <= tmax && tmin >= 0);
+	}
 };
 
 AABB merge(AABB &box1, AABB &box2) {
@@ -63,24 +78,19 @@ AABB merge(AABB &box1, AABB &box2) {
 	return AABB(pt1, pt2);
 }
 
-
-struct Triangle {
-	vec3f center;
-	int vertex[3];
-	int vertexNormal[3];
-	void copy(Triangle &a) {
-		center = a.center;
-		for(int i = 0; i < 3; ++i) {
-			vertex[i] = a.vertex[i];
-			vertexNormal[i] = a.vertexNormal[i];
-		}
-	}
+struct Intersection {
+	vec3f point;
+	vec3f normal;
+	Material material;
 };
+
+
 
 
 struct Light {
 	vec3f p0, p1, p2;
 	vec3f ke;
+	
 };
 
 
