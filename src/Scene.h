@@ -166,10 +166,6 @@ private:
 
             if(newRay.source != Ray::SOURCE::NONE) {
                 indirectLight = trace(newRay, depth + 1);
-                // vec3f view_direction = normalize(ray.pos - ray.hitPoint);
-                // vec3f reflect_direction = normalize(newRay.direction - ray.hitNormal * 2 * dot(newRay.direction, ray.hitNormal));
-                
-
                 switch (newRay.source) {
                     case Ray::SOURCE::DIFFUSE_REFLECT:
                         indirectLight = ray.hitTriangle.material.kd * indirectLight/**dot(newRay.direction, intersection.normal)*/;
@@ -177,7 +173,7 @@ private:
                     case Ray::SOURCE::SPECULAR_REFLECT:
                         indirectLight = ray.hitTriangle.material.ks * indirectLight/**pow(dot(view_direction, reflect_direction), material.shiness)*/;
                         break;
-                    case Ray::SOURCE::TRANSMISSON:
+                    default :
                         indirectLight = indirectLight;
                         break;
                 }
@@ -257,13 +253,58 @@ private:
         return normalize(sample.x*right + sample.y*up + sample.z*front);
     }
     vec3f directIllumination(Ray& ray)  {
-        // printf("hhh\n");
-        vec3f color;
+        vec3f rgb;
         for (int i = 0, len = lights.size(); i < len; ++i) {
-            // color += renderLight(i, ray/);
+            // float sx = (float)rand() / RAND_MAX;
+            // float sy = (float)rand() / RAND_MAX;
+
+            vec3f lightOrigin = lights[i].center;
+            vec3f r = lightOrigin - ray.hitPoint;
+            float rr = length(r);
+            Ray shadowRay = Ray(ray.hitPoint, r);
+            shadowRay.tmax = rr;
+
+            model->kdtree.notIntersect(model->kdtree.root, shadowRay, 0);
+            if (shadowRay.hit == false)
+            {
+                vec3f s = normalize(r);
+
+                float cosThetaIn = max(dot(ray.hitNormal, s), 0.0f);
+                float cosThetaOut = max(dot(-s, ray.hitNormal), 0.0f);
+                float geoFactor = cosThetaIn*cosThetaOut / (rr*rr);
+                // Probability: 1/area.
+                vec3f intensity = geoFactor * length(lights[i].normal) * lights[i].emisiion;
+
+                if (ray.hitTriangle.material.kd != BLACK)
+                {
+                    //calculate the diffuse color
+                    float mDots = dot(s, ray.hitNormal);
+                    if (mDots > 0.0) rgb += mDots*ray.hitTriangle.material.kd
+                        *intensity / PI;
+                }
+
+                if (ray.hitTriangle.material.ks != BLACK)
+                {
+                    //calculate the specular color
+                    vec3f v = ray.direction.flip();
+                    vec3f h = normalize(s + v);
+                    float mDotH = dot(h, ray.hitNormal);
+                    if (mDotH > 0.0) rgb += pow(mDotH, ray.hitTriangle.material.ns)* ray.hitTriangle.material.ks
+                        *intensity
+                        *(ray.hitTriangle.material.ns + 1) / (2 * PI);
+                }
+            }
         }
-        return vec3f(0, 0, 0);
+        return rgb;
     }
+
+//     float intersect(Ray &r, Light &l) {
+//         Vec op = l.center-; // Solve t^2*d.d + 2*t*(o-p).d + (o-p).(o-p)-R^2 = 0 
+//         double t, eps=1e-4, b=op.dot(r.d), det=b*b-op.dot(op)+rad*rad; 
+//         if (det<0) return 0; else det=sqrt(det); 
+//         return (t=b-det)>eps ? t : ((t=b+det)>eps ? t : 0); 
+//    } 
+
 
 };
 
