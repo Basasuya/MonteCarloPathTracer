@@ -2,7 +2,7 @@
 #define __POINT_H
 
 #include <cmath>
-
+using namespace std;
 const float EPS = 1e-5;
 
 
@@ -61,6 +61,15 @@ public:
 		}
 		return n[i];
 	}
+    float sum() {
+        return n[0] + n[1] + n[2];
+    }
+    float Max() {
+        return max(max(x, y), z);
+    }
+    float Min() {
+        return min(min(x, y), z);
+    }
 };
 
 

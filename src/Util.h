@@ -45,6 +45,9 @@ struct Material {
 struct Triangle {
 	vec3f center;
     Material material;
+	vec3f normal;
+	Mat4 mat;
+	vec3f origin, edge1, edge2;
  	int vertex[3];
 	int vertexNormal[3];
 };
@@ -58,4 +61,7 @@ struct Light{
 	int type; // 0 square 1 sphare
 };
 
+float Rand() {
+	return (float)rand() / RAND_MAX;
+}
 #endif

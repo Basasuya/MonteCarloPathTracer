@@ -119,6 +119,16 @@ void Model::readObj(string path) {
                         tra.vertex[i] = vertex[i];
                         tra.vertexNormal[i] = vertexNormal[i];
                     }
+                    vec3f p0 = points[tra.vertex[0]];
+                    vec3f p1 = points[tra.vertex[1]];
+                    vec3f p2 = points[tra.vertex[2]];
+                    tra.origin = p0;
+                    tra.edge1 = p1 - p0;
+                    tra.edge2 = p2 - p0;
+                    tra.normal = normalize(cross(tra.edge1, tra.edge2));
+                    tra.mat = Mat4(p0, p1, p2);
+                    tra.mat.inverse();
+
                     tra.center = (points[vertex[0]] + points[vertex[1]] + points[vertex[2]]) / 3;
                     triangles.push_back(tra);
 

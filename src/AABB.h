@@ -29,17 +29,41 @@ struct AABB {
 				tmax = min(tmax, max(t1, t2));
 			}
 		}
-		return (tmin < ray.tmax && tmax > ray.tmin && tmin <= tmax && tmin >= 0);
+		return (tmin < ray.tmax && tmax > ray.tmin && tmin <= tmax && tmax >= 0);
 	}
 };
 
-AABB merge(AABB &box1, AABB &box2) {
+AABB merge(AABB box1, AABB box2) {
 	vec3f pt1, pt2;
 	for(int i = 0; i < 3; ++i) {
 		pt1[i] = min(box1.low[i], box2.low[i]);
 	}
 	for(int i = 0; i < 3; ++i) {
 		pt2[i] = max(box1.high[i], box2.high[i]);
+	}
+	return AABB(pt1, pt2);
+}
+
+
+AABB merge(vec3f &box1, vec3f &box2) {
+	vec3f pt1, pt2;
+	for(int i = 0; i < 3; ++i) {
+		pt1[i] = min(box1[i], box2[i]);
+	}
+	for(int i = 0; i < 3; ++i) {
+		pt2[i] = max(box1[i], box2[i]);
+	}
+	return AABB(pt1, pt2);
+}
+
+
+AABB merge(AABB box1, vec3f &box2) {
+	vec3f pt1, pt2;
+	for(int i = 0; i < 3; ++i) {
+		pt1[i] = min(box1.low[i], box2[i]);
+	}
+	for(int i = 0; i < 3; ++i) {
+		pt2[i] = max(box1.high[i], box2[i]);
 	}
 	return AABB(pt1, pt2);
 }
