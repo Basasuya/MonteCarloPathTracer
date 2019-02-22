@@ -59,6 +59,7 @@ private:
 
 };
 void Model::readObj(string path) {
+    printf("%s\n", path.c_str());
     std::ifstream file(path);
     if (!file.is_open()) {
         printf("the obj path is unavailable\n");
@@ -143,6 +144,7 @@ void Model::readObj(string path) {
     file.close();
 }
 void Model::readMtl(string path) {
+    printf("%s\n", path.c_str());
     std::ifstream file(path);
     if (!file.is_open()) {
         printf("the Mtl path is unavailable\n");

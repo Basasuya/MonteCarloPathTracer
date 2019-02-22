@@ -17,9 +17,10 @@ struct AABB {
 			high[i] = _high[i];
 		}
 	}
-	bool intersect(Ray& ray) {
+	inline bool intersect(Ray& ray) {
 		float tmin = -1, tmax = -1;
 		for(int i = 0; i < 3; ++i) {
+			if(ray.direction[i] < EPS) return false;
 			float t1 = (low[i] - ray.pos[i]) / ray.direction[i];
 			float t2 = (high[i] - ray.pos[i]) / ray.direction[i];
 			if(i == 0) {

@@ -18,7 +18,8 @@ struct Node{
 struct cmpx{
     int div;
     cmpx(const int &_div) { div = _div; }
-    bool operator() (Triangle &a, Triangle& b) {
+    bool operator() (const Triangle &a, const Triangle& b) {
+        // return a.center[ div % 3] < b.center[ div % 3];
         for(int i = 0; i < 3; ++i) {
             if(a.center[ (div+i) % 3] != b.center[ (div+i) % 3]) {
                 return a.center[ (div+i) % 3] < b.center[ (div+i) % 3];
@@ -28,7 +29,7 @@ struct cmpx{
     }
 };
 
-bool cmp(Triangle& a, Triangle& b, int div) {
+bool cmp(const Triangle& a, const Triangle& b, int div) {
     cmpx cp = cmpx(div);
     return cp(a, b);
 }
@@ -36,6 +37,7 @@ bool cmp(Triangle& a, Triangle& b, int div) {
 class Kdtree{
 public:
     int minLeaf = 5;
+    int cnt = 0;
     Node *root;
     vector<Triangle> *triangle;
     vector<vec3f> *points;
@@ -45,7 +47,7 @@ public:
         // root = new Node();
     }
     void init() {
-        // printf("%d %d %d\n", triangle->size(), points->size(), normals->size());
+        printf("%d %d %d\n", triangle->size(), points->size(), normals->size());
         root = build(0, triangle->size(), 0);
     }
 
@@ -93,9 +95,9 @@ public:
 
 private:
     Node* build(int l, int r, int div) {
-        // printf("%d %d\n", l, r);
+        // printf("%d %d %d\n", l, r, cnt);
         if(l >= r) return NULL;
-        Node *p = new Node();        
+        Node *p = new Node();  cnt ++;      
         p->div = div;
         p->l = l; p->r = r;
         // if(r - l < minLeaf) { 
@@ -106,7 +108,12 @@ private:
         //     return p;
         // }
         int mid = (l + r) / 2;
+        // if(l == 6607 && r == 6621) {
+        //     for(int i = l; i < r; ++i) printf("%d ", i), (*triangle)[i].center.print();
+        // }
+        // printf("hhhh\n");
         nth_element(triangle->begin() + l, triangle->begin() + mid, triangle->begin() + r, cmpx(div));
+        // printf("hhhh\n");
         p->split = (*triangle)[mid];
         p->lc = build(l, mid, (div + 1) % 3);
         p->rc = build(mid + 1, r, (div + 1) % 3);

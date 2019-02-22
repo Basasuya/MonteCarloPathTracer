@@ -77,7 +77,7 @@ int main(int argc,char** argv) {
             break;
 
         default:
-            Render4();
+            Render2();
             break;
     }
 

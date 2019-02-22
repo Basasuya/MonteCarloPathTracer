@@ -21,8 +21,8 @@ public:
     vec3f viewX, viewY, viewZ;
     
     vec3f ambient;
-    int monteCarloMaxSample;
-    int maxRecursizeDepth;
+    int monteCarloMaxSample = 100;
+    int maxRecursizeDepth = 5;
     int iterations;
 
     float* colors;
@@ -127,17 +127,14 @@ private:
         file >> fovy;
 
         // file >> pixelSample;
-        file >> monteCarloMaxSample;
-        file >> maxRecursizeDepth;
+        // file >> monteCarloMaxSample;
+        // file >> maxRecursizeDepth;
          
         int q;
         file >> q;
         for(int i = 0; i < q; ++i) {
             Light tt;
-            file >> tt.type >> tt.r;
-            if(tt.type == 0) {
-                file >> tt.normal[0] >> tt.normal[1] >> tt.normal[2];
-            }
+            file >> tt.r;
             file >> tt.center[0] >> tt.center[1] >> tt.center[2];
             file >> tt.emisiion[0] >> tt.emisiion[1] >> tt.emisiion[2];
             lights.push_back(tt);
@@ -153,12 +150,10 @@ private:
     vec3f trace(Ray ray, int depth) {
         // model->kdtree.burceIntersect(model->kdtree.root, ray, 0);
         model->kdtree.intersect(model->kdtree.root, ray, 0);
-        intersectLight(ray);
+        // intersectLight(ray);
         // if(ray.hit) printf("yingyingying\n");
-        if(!ray.hit || depth > 5) {
+        if(!ray.hit || depth > maxRecursizeDepth) {
             return BLACK;
-        } else if(ray.hitLight != -1){
-            return lights[ray.hitLight].emisiion;
         } else {
             Material mt = ray.hitTriangle.material;
             // return mt.kd;
@@ -166,13 +161,31 @@ private:
             vec3f reflectDirection = normalize(ray.direction - 2 * ray.hitNormal * dot(ray.hitNormal, ray.direction)); // normal may has several bug
             vec3f orientedNormal = dot(ray.hitNormal, ray.direction) < 0 ? ray.hitNormal : - ray.hitNormal;
             float russianRoulette = Rand();
-
-            if(russianRoulette < sumKs / sumKd) { // do SPECULAR;
+            
+             if(mt.ni > 1) { // do glass
+                Ray reflRay(ray.hitPoint, reflectDirection);     // Ideal dielectric REFRACTION
+                bool into = dot(ray.hitNormal, orientedNormal) > 0;                // Ray from outside going in?
+                float nc=1, nt=mt.ni, nnt=into?1/mt.ni:mt.ni, ddn=dot(ray.direction, orientedNormal), cos2t;
+                if ((cos2t=1-nnt*nnt*(1-ddn*ddn))<0)    // Total internal reflection
+                    return mt.ke + trace(reflRay,depth + 1) ;
+                vec3f tdir = normalize(ray.direction * nnt - ray.hitNormal * ((into?1:-1)*(ddn*nnt+sqrt(cos2t))));
+                float a=nt-nc, b=nt+nc, R0=a*a/(b*b), c = 1-(into?-ddn:dot(tdir, ray.hitNormal));
+                float Re=R0+(1-R0)*c*c*c*c*c,Tr=1-Re,P=.25+.5*Re,RP=Re/P,TP=Tr/(1-P);
+                Ray refectRay(ray.hitPoint, tdir);
+                // printf("%.3f %.3f %.3f %.3f\n", RP, Re, TP, Tr);
+                return mt.ke + (depth>2 ? (Rand() < P?   // Russian roulette
+                    trace(reflRay,depth + 1) * RP : trace(refectRay, depth + 1)*TP) :
+                    trace(reflRay,depth + 1) * Re + trace(refectRay, depth + 1)*Tr);
+            }  else if(russianRoulette < sumKs / sumKd) { // do SPECULAR;
                 Ray newRay = Ray(ray.hitPoint, reflectDirection);
-                return mt.ks * trace(newRay, depth + 1);
+                vec3f result = trace(newRay, depth + 1);
+                if(result == BLACK) return mt.ke + mt.ks * 0.1f;
+                return mt.ke + mt.ks * max( dot(ray.hitNormal, reflectDirection), 0.0f) * 
+                pow(max(dot(ray.hitNormal, (ray.hitNormal + reflectDirection) / 2), 0.0f), mt.ni) * result;
             } else { // do diffuse;
                 vec3f e;
                 for(int i = 0, len = lights.size(); i < len; ++i) {
+                    // if(lights[i].type == 1) {
                     vec3f sw=lights[i].center-ray.hitPoint;
                     vec3f su= normalize(cross( (fabs(sw.x)>.1?vec3f(0,1,0):vec3f(1,0,0)) , sw)), sv=cross(sw, su);
                     float cos_a_max = sqrt(1-lights[i].r * lights[i].r / dot((ray.hitPoint-lights[i].center), ray.hitPoint-lights[i].center));
@@ -181,17 +194,18 @@ private:
                     float sin_a = sqrt(1-cos_a*cos_a);
                     float phi = 2*M_PI*eps2;
                     vec3f l = normalize(su*cos(phi)*sin_a + sv*sin(phi)*sin_a + sw*cos_a);
-                    Ray newRay = Ray(ray.hitPoint, l);
-                    sphereIntersect(lights[i], newRay, i);
+                    Ray shadowRay = Ray(ray.hitPoint, l);
+                    sphereIntersect(lights[i], shadowRay, i);
                     // printf("%d\n", newRay.hit);
-                    newRay.hit = false;
-                    model->kdtree.notIntersect(model->kdtree.root, newRay, 0);
+                    shadowRay.tmax *= 0.99;
+                    shadowRay.hit = false;
+                    model->kdtree.notIntersect(model->kdtree.root, shadowRay, 0);
                     // printf("%d\n", newRay.hit);
-                    if (newRay.hit == false){  // shadow ray
-                        double omega = 2*M_PI*(1-cos_a_max);
+                    if (shadowRay.hit == false){  // shadow ray
+                        float omega = 2*M_PI*(1-cos_a_max);
                         e = e + max( dot(ray.hitNormal, l), 0.0f) * lights[i].emisiion * dot(l, orientedNormal) * omega * M_1_PI;  // 1/pi for brdf
-                        // e.print();
                     }
+                    // }
                 }
                 float r1 = 2*M_PI * Rand();
                 float r2 = Rand();
@@ -203,9 +217,9 @@ private:
                 Ray newRay = Ray(ray.hitPoint, diffuseReflectDirection);
                 // Ray newRay = Ray(ray.hitPoint, reflectDirection);
                 vec3f result = trace(newRay, depth + 1);
-                if(result == BLACK) return e + mt.kd;
+                if(result == BLACK) return mt.ke + e * mt.kd + mt.kd * 0.1f;
                 // printf("%.3f %.3f %.3f ", dot(ray.hitNormal, diffuseReflectDirection), dot(ray.hitNormal, ray.direction), mt.kd.sum()); e.print();
-                return e + mt.kd * max(0.0f, dot(ray.hitNormal, diffuseReflectDirection)) * result;
+                return mt.ke + mt.kd * (e +  max(0.0f, dot(ray.hitNormal, diffuseReflectDirection)) * result);
             }
         }
     }
@@ -225,11 +239,17 @@ private:
         }
     }
 
-    void intersectLight(Ray& ray) {
-        for(int i = 0, len = lights.size(); i < len; ++i) {
-            sphereIntersect(lights[i], ray, i);
-        }
-    }
+    // void squareIntersect(Light& l, Ray& r, int id) {
+    //     if(dot(r.direction, l.normal) >=  0) return;
+    //     else if(dot())
+
+    // }
+
+    // void intersectLight(Ray& ray) {
+    //     for(int i = 0, len = lights.size(); i < len; ++i) {
+    //         lights[i].type == 0 ? squareIntersect(lights[i], ray, i) : sphereIntersect(lights[i], ray, i);
+    //     }
+    // }
 
 
 };

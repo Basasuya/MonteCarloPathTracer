@@ -54,11 +54,18 @@ public:
 	friend inline vec3f operator / (float num, const vec3f &u) { return vec3f(num / u.x, num / u.y, num / u.z); }
 	friend inline vec3f operator / (const vec3f &u, const vec3f &v) { return vec3f(u.x / v.x, u.y / v.y, u.z / v.z); }
 
-	inline float& operator[](int i) {
-		if(i > 2) {
-			printf("the size is bigger than array");
-			exit(0);
-		}
+	float&  operator[](int i) {
+		// if(i > 2) {
+		// 	printf("the size is bigger than array");
+		// 	exit(0);
+		// }
+		return n[i];
+	}
+    const float&  operator[](int i) const{
+		// if(i > 2) {
+		// 	printf("the size is bigger than array");
+		// 	exit(0);
+		// }
 		return n[i];
 	}
     float sum() {
