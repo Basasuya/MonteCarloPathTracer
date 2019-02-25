@@ -1,7 +1,7 @@
 #include <iostream>
 #include "Model.h"
 #include "Scene.h"
-#include <GLUT/glut.h>
+#include <GL/glut.h>
 using namespace std;
 
 int chooseRender = 4;
@@ -77,7 +77,7 @@ int main(int argc,char** argv) {
             break;
 
         default:
-            Render2();
+            Render4();
             break;
     }
 

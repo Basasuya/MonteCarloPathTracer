@@ -7,8 +7,8 @@ struct AABB {
 	vec3f low, high;
 	AABB(){
 		for(int i = 0; i < 3; ++i) {
-			low[i] = INT_MAX;
-			high[i] = INT_MIN;
+			low[i] = 2e9;
+			high[i] = -2e9;
 		}
 	};
     AABB(vec3f _low, vec3f _high) {
@@ -20,7 +20,7 @@ struct AABB {
 	inline bool intersect(Ray& ray) {
 		float tmin = -1, tmax = -1;
 		for(int i = 0; i < 3; ++i) {
-			if(ray.direction[i] < EPS) return false;
+			// if(ray.direction[i] < EPS) return false;
 			float t1 = (low[i] - ray.pos[i]) / ray.direction[i];
 			float t2 = (high[i] - ray.pos[i]) / ray.direction[i];
 			if(i == 0) {
