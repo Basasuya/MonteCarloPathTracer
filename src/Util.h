@@ -6,6 +6,7 @@
 #include <tuple>
 #include <iostream>
 #include <cstring>
+#include <cfloat>
 #include "Point.h"
 using namespace std;
 
@@ -58,10 +59,43 @@ struct Light{
 	float r;
 	vec3f center;
 	vec3f normal;
-	int type; // 0 square 1 sphare
+	// int type; // 0 square 1 sphare
 };
 
 float Rand() {
 	return (float)rand() / RAND_MAX;
 }
+
+
+
+class Ray {
+public:    
+    vec3f pos;
+    int hitLight;
+    vec3f direction;
+    float tmin,tmax;
+    bool hit;
+    vec3f hitPoint;
+    vec3f hitNormal;
+    Triangle hitTriangle;
+    
+
+public:
+    Ray(vec3f _pos = vec3f(0.0, 0.0, 0.0), vec3f _direction = vec3f(0.0, 0.0, 0.0)) {
+        pos = _pos;
+        direction = normalize(_direction);
+        tmin = EPS;
+        hitLight = -1;
+        tmax = FLT_MAX;
+        hit = false;
+    }
+    vec3f getPoint(float t) { 
+        return pos + direction*t;
+    }
+
+    bool isWithinBounds(float tVal) { 
+        return tVal < tmax && tVal > tmin; 
+    }
+};
+
 #endif

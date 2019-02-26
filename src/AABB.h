@@ -1,7 +1,6 @@
 #ifndef __AABB_H
 #define __AABB_H
 #include "Util.h"
-#include "Ray.h"
 
 struct AABB {
 	vec3f low, high;

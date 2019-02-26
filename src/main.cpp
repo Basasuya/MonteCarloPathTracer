@@ -36,6 +36,7 @@ void Render2() {
 void Render3() {
     model = new Model("./models/Scene03");
     scene = new Scene("./models/Scene03");
+    scene->viewX = - scene->viewX;
 }
 
 void Render4() {
@@ -76,8 +77,12 @@ int main(int argc,char** argv) {
             Render3();
             break;
 
-        default:
+        case 4:
             Render4();
+            break;
+
+        default:
+            Render1();
             break;
     }
 
