@@ -21,7 +21,7 @@ public:
     vec3f viewX, viewY, viewZ;
     
     vec3f ambient;
-    int monteCarloMaxSample = 100;
+    int monteCarloMaxSample = 1000;
     int maxRecursizeDepth = 6;
     int iterations;
 
@@ -64,7 +64,7 @@ public:
         clock_t t1 = clock();
         iterations ++;
         if (iterations > monteCarloMaxSample) {
-            sleep(2);
+            // sleep(2);
             return colors;
         }
         printf("the %d iteration ", iterations);
@@ -138,10 +138,6 @@ private:
         file >> lookat[0] >> lookat[1] >> lookat[2];
         file >> up[0] >> up[1] >> up[2];
         file >> fovy;
-
-        // file >> pixelSample;
-        // file >> monteCarloMaxSample;
-        // file >> maxRecursizeDepth;
          
         int q;
         file >> q;

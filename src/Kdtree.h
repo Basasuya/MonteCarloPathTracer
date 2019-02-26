@@ -59,12 +59,7 @@ public:
     } 
     void intersect(Node *rt, Ray& ray, int div) {
         if(!rt->abstract.intersect(ray)) return;
-        // if(rt->r - rt->l < minLeaf) {
-        //     for(int i = rt->l; i < rt->r; ++i) {
-        //         update(ray, (*triangle)[i]);
-        //     }
-        //     return;
-        // }
+
         update(ray, rt->split);
         if (ray.direction[div] >= 0) {
             if(rt->lc != NULL) intersect(rt->lc, ray, (div + 1) % 3);
@@ -78,12 +73,6 @@ public:
     void notIntersect(Node* rt, Ray& ray, int div) {
         if(ray.hit) return;
         if(!rt->abstract.intersect(ray)) return;
-        // if(rt->r - rt->l < minLeaf) {
-        //     for(int i = rt->l; i < rt->r; ++i) {
-        //         update(ray, (*triangle)[i]);
-        //     }
-        //     return;
-        // }
         update(ray, rt->split);
         if (ray.direction[div] >= 0) {
             if(rt->lc != NULL) intersect(rt->lc, ray, (div + 1) % 3);
@@ -101,20 +90,8 @@ private:
         Node *p = new Node();  cnt ++;      
         p->div = div;
         p->l = l; p->r = r;
-        // if(r - l < minLeaf) { 
-        //     p->abstract = getAABB((*triangle)[l]);
-        //     for(int i = l + 1; i < r; ++i) {
-        //         p->abstract = merge(p->abstract, getAABB((*triangle)[i]));
-        //     }
-        //     return p;
-        // }
         int mid = (l + r) / 2;
-        // if(l == 6607 && r == 6621) {
-        //     for(int i = l; i < r; ++i) printf("%d ", i), (*triangle)[i].center.print();
-        // }
-        // printf("hhhh\n");
         nth_element(triangle->begin() + l, triangle->begin() + mid, triangle->begin() + r, cmpx(div));
-        // printf("hhhh\n");
         p->split = (*triangle)[mid];
         p->lc = build(l, mid, (div + 1) % 3);
         p->rc = build(mid + 1, r, (div + 1) % 3);
