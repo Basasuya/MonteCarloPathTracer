@@ -50,7 +50,7 @@ radius center.x center.y center.z emission.r emission.g emission.b
 
 <img src="./docs/raytracing_diagram.png">
 
-path tracer 从视线出发，翻过来计算每个像素的颜色。当一个ray射到物体的时候，此时的光线可以表示为:
+path tracer 从视线出发，反过来计算每个像素的颜色。当一个ray射到物体的时候，此时的光线可以表示为:
 
 **LightColor = DirectLight + IndirectLight + EnvironmentLight + itelfLight** 
 
